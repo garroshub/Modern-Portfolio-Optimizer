@@ -1,4 +1,4 @@
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://markowitz.streamlit.app)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://modernportfolio.streamlit.app/)
 
 # Modern Portfolio Optimization Streamlit app
 This Streamlit app calculates an optimal investment portfolio based on a user-defined minimum required return and selection of funds. The app uses historical returns since 2023 to calculate correlations and volatilities, then employs Markowitz portfolio optimization to calculate and display the optimal portfolio composition.  
@@ -15,5 +15,5 @@ Users can change underlying assumptions about expected returns, volatilities, an
 - **Results**: The app displays the optimal allocation among the selected funds to achieve the desired return with minimum risk.
 
 ## How to run
-[https://markowitz.streamlit.app/](https://markowitz.streamlit.app/)
+[https://markowitz.streamlit.app/](https://modernportfolio.streamlit.app/)
 
