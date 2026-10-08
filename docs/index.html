@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0a1422"><meta name="description" content="Interactive portfolio manager decision workspace with uncertainty-aware risk budgeting and a general Python API."><title>Portfolio Risk Lab | Decision Workspace</title><link rel="icon" type="image/svg+xml" href="./mark.svg"><link rel="stylesheet" href="./styles.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0a1422"><meta name="description" content="Interactive portfolio manager decision workspace with uncertainty-aware risk budgeting and a general Python API."><title>Portfolio Risk &amp; Rebalancing Lab | Interactive Workspace</title><link rel="icon" type="image/svg+xml" href="./mark.svg"><link rel="stylesheet" href="./styles.css"></head>
 <body>
 <header class="site-header" id="home"><div class="wrap topnav">
 <a href="#workspace" class="brand"><span class="brand-icon" aria-hidden="true">⌁</span><span><b>PORTFOLIO</b><small>RISK LAB</small></span></a>
 <nav aria-label="Main navigation"><a href="#workspace" class="active">Live workspace</a><a href="#methodology">Methodology</a><a href="#developers">Python API</a></nav>
-<a class="github-link" href="https://github.com/garroshub/Modern-Portfolio-Optimizer" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+<a class="github-link" href="https://github.com/garroshub/portfolio-risk-lab" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
 </div></header>
 <main>
 <section id="workspace" class="wrap workspace-section">
@@ -73,7 +73,7 @@
 <div class="wrap research-banner"><strong>Research boundary</strong><span>Historical risk margins can reduce modeled exposure but have not consistently improved economic utility against simpler risk-matched limits. Quantiles are descriptive, not coverage guarantees.</span></div>
 <section class="wrap below-section" id="methodology"><span class="overline">METHODOLOGY</span><h2>Designed for decisions, not backtest promises.</h2><p class="below-lead">Three risk estimates reveal model disagreement. Historical forecasting errors inform a risk margin. Every allocation exposes the trade-off between risk protection and expected return.</p>
 <div class="method-grid"><article><span>01 / FORECAST</span><h3>Model disagreement</h3><p>Compare long-window, short-window and EWMA covariance estimates.</p></article><article><span>02 / CALIBRATE</span><h3>Forecast reliability</h3><p>Use only completed months to measure historical volatility underprediction.</p></article><article><span>03 / CONSTRAIN</span><h3>Scenario robustness</h3><p>Require allocation feasibility under the selected risk scenarios.</p></article><article><span>04 / EXPLAIN</span><h3>PM trade-offs</h3><p>Show risk, return assumptions, weight changes and rebalancing costs.</p></article></div></section>
-<section class="wrap below-section developer-section" id="developers"><span class="overline">PYTHON PACKAGE + CLI</span><div class="developer-heading"><div><h2>A general-purpose Python optimization API</h2><p class="below-lead">Pass your own daily returns and holdings. The full library uses SciPy; this static page uses a checked browser approximation.</p></div><a href="https://github.com/garroshub/Modern-Portfolio-Optimizer" target="_blank" rel="noopener noreferrer" class="github-link">Browse source ↗</a></div>
+<section class="wrap below-section developer-section" id="developers"><span class="overline">PYTHON PACKAGE + CLI</span><div class="developer-heading"><div><h2>A general-purpose Python optimization API</h2><p class="below-lead">Pass your own daily returns and holdings. The full library uses SciPy; this static page uses a checked browser approximation.</p></div><a href="https://github.com/garroshub/portfolio-risk-lab" target="_blank" rel="noopener noreferrer" class="github-link">Browse source ↗</a></div>
 <div class="code-card"><div class="code-header"><span>portfolio_example.py</span><button type="button" id="copy-code">Copy code</button></div><pre><code id="code-example">from portfolio_risk_lab import PortfolioAnalyzer
 
 lab = PortfolioAnalyzer(
@@ -88,6 +88,6 @@ result = lab.compare(
 )
 print(result.risk_budget_analysis)</code></pre><div class="code-foot">LOCAL INSTALL <code>pip install -e .</code></div></div></section>
 </main>
-<footer><div class="wrap footer-inner"><span>PORTFOLIO RISK LAB · RESEARCH DEMONSTRATION</span><span>Open-source decision support. Not investment advice.</span><a href="https://github.com/garroshub/Modern-Portfolio-Optimizer" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></footer>
+<footer><div class="wrap footer-inner"><span>PORTFOLIO RISK LAB · RESEARCH DEMONSTRATION</span><span>Open-source decision support. Not investment advice.</span><a href="https://github.com/garroshub/portfolio-risk-lab" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></footer>
 <script type="module" src="./main.js"></script>
 </body></html>

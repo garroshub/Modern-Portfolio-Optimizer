@@ -1,6 +1,8 @@
 # Whitelist package source and minimal launch/docs. Legacy original demo and user
 # research datasets remain in the git checkout, but NEVER ship in an sdist.
 include README.md
+include LICENSE
+include THIRD_PARTY_NOTICES.md
 include pyproject.toml
 recursive-include portfolio_risk_lab *.py
 prune src

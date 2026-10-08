@@ -7,6 +7,7 @@ name = "portfolio-risk-lab"
 version = "0.1.0"
 description = "Portfolio rebalancing and uncertainty-aware risk budgeting for decision support"
 readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.10"
 authors = [{name = "Garros Gong"}]
 keywords = ["portfolio optimization", "risk budgeting", "scenario robustness", "decision support"]
