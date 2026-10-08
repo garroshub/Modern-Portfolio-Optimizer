@@ -1,0 +1,15 @@
+# Whitelist package source and minimal launch/docs. Legacy original demo and user
+# research datasets remain in the git checkout, but NEVER ship in an sdist.
+include README.md
+include pyproject.toml
+recursive-include portfolio_risk_lab *.py
+prune src
+prune data
+prune tests
+prune tests_package
+prune experiments
+exclude app.py
+exclude pytest.ini
+exclude requirements.txt
+exclude setup.cfg
+global-exclude __pycache__ *.py[cod]
