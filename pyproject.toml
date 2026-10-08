@@ -6,17 +6,24 @@ build-backend = "setuptools.build_meta"
 name = "portfolio-risk-lab"
 version = "0.1.0"
 description = "Portfolio rebalancing and uncertainty-aware risk budgeting for decision support"
-readme = "README.md"
+readme = "PYPI_README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
 authors = [{name = "Garros Gong"}]
 keywords = ["portfolio optimization", "risk budgeting", "scenario robustness", "decision support"]
+
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Programming Language :: Python :: 3",
   "Topic :: Office/Business :: Financial :: Investment",
 ]
 dependencies = ["numpy>=1.24", "pandas>=2.0", "scipy>=1.10"]
+
+[project.urls]
+Homepage = "https://garroshub.github.io/portfolio-risk-lab/"
+Source = "https://github.com/garroshub/portfolio-risk-lab"
+Documentation = "https://github.com/garroshub/portfolio-risk-lab#python-api"
+Issues = "https://github.com/garroshub/portfolio-risk-lab/issues"
 
 [project.optional-dependencies]
 market = ["yfinance>=0.2.40"]
