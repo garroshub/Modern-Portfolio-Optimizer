@@ -48,6 +48,30 @@ export function makeSynthetic(days=1280,seed=20261008) {
           source:"Synthetic illustration, not historical market data"};
 }
 
+/** Three repeatable and explicitly simulated PM case studies. */
+export function makePreset(preset="balanced") {
+  if (!["balanced","equity_shock","rates_shock"].includes(preset))
+    throw Error("Unknown synthetic portfolio case.");
+  const base=makeSynthetic(1280,20261008);
+  if(preset==="balanced")return {...base,caseLabel:"Diversified portfolio"};
+  const returns=base.returns.map((row,i)=>{
+    const x=[...row];
+    if(preset==="equity_shock" && i>=1020 && i<1135){
+      x[0]=x[0]*1.65-.0014;
+      x[1]=x[1]*1.5-.0011;
+      x[4]=x[4]*1.3-.0006;
+    }
+    if(preset==="rates_shock" && i>=1010 && i<1140){
+      x[2]=x[2]*1.8-.001;
+      x[4]=x[4]*1.65-.0008;
+      x[5]=x[5]*1.25;
+    }
+    return x;
+  });
+  return {...base,returns,caseLabel:preset==="equity_shock"?
+    "Equity stress scenario":"Rates stress scenario"};
+}
+
 export function parseReturnsCSV(text) {
   if(typeof text!=="string"||text.length>2_000_000) throw Error("CSV must be below 2 MB.");
   const lines=text.trim().split(/\r?\n/);
@@ -228,6 +252,12 @@ export function analyze(data,options={}) {
   const maxWeight=Number(options.maxWeight??.4);
   const costBps=Number(options.costBps??10);
   const q=Number(options.quantile??.85);
+  const mode=options.uncertaintyMode??(options.calibration===false?"scenarios":"calibrated");
+  const stressMultiplier=Number(options.stressMultiplier??1.20);
+  if(!["off","scenarios","calibrated","stress"].includes(mode))
+    throw Error("Unknown uncertainty-aware allocation mode.");
+  if(!(stressMultiplier>=1&&stressMultiplier<=1.6))
+    throw Error("Stress multiplier must be between 1.0 and 1.6.");
   if(!(riskBudget>=.03&&riskBudget<=.5&&maxWeight>=.2&&maxWeight<=1&&
        costBps>=0&&costBps<=1000&&q>=.5&&q<=.95))
     throw Error("One or more requested risk parameters are outside valid limits.");
@@ -245,11 +275,20 @@ export function analyze(data,options={}) {
   for(let i=0;i<mu.length;i++)mu[i]=clamp(mu[i]*252/252,-.6,.7); // annualization: 252 observations
   const models=forecastModels(returns);
   const report=calibrate(data,upper,q);
-  const margin=options.calibration===false?1:report.multiplier;
-  const usedCalibration=options.calibration===false?{...report,multiplier:1,status:"disabled"}:report;
+  const historical=(mode==="calibrated"||mode==="stress");
+  const margin=mode==="stress"?report.multiplier*stressMultiplier:
+    (historical?report.multiplier:1);
+  const usedCalibration=historical?{
+    ...report,multiplier:margin,
+    baseHistoricalMultiplier:report.multiplier,
+    stressOverlay:mode==="stress"?stressMultiplier:1,
+    status:mode==="stress"?"illustrative_stress_overlay":report.status
+  }:{...report,multiplier:1,status:(mode==="off"||options.calibration===false)?"disabled":"scenario_only",
+       baseHistoricalMultiplier:report.multiplier,stressOverlay:1};
   const standard=optimize(mu,models.long,[models.long],current,upper,riskBudget,cashIndex);
-  const robust=optimize(mu,avgMatrix(models.long,models.short),
-                        Object.values(models),current,upper,riskBudget/margin,cashIndex);
+  const robust=mode==="off"? [...standard] :
+    optimize(mu,avgMatrix(models.long,models.short),
+             Object.values(models),current,upper,riskBudget/margin,cashIndex);
   const profiles={
     Current:analyzePosition(current,mu,models,current,costBps,riskBudget),
     Standard:analyzePosition(standard,mu,models,current,costBps,riskBudget),
@@ -258,13 +297,15 @@ export function analyze(data,options={}) {
   return {
     assets,source:data.source,model:"Browser-only feasible coordinate-search approximation",
     fidelity:"This is illustrative browser optimization, not the SciPy Python solver.",
-    options:{riskBudget,maxWeight,costBps,quantile:q,calibration:options.calibration!==false},
+    options:{riskBudget,maxWeight,costBps,quantile:q,
+      uncertaintyMode:mode,calibration:historical,stressMultiplier},
     calibration:usedCalibration,profiles,modelNames:["long","short","ewma"],
     warnings:[
       "All prices and returns in the built-in sample are simulated; no live market data.",
       "Browser results are approximate, with every risk constraint checked after optimization.",
       "Historical reference-direction calibration does not guarantee future coverage.",
-      "Scenario-robust allocation can sacrifice expected return to reduce model risk."
+      "Scenario-robust allocation can sacrifice expected return to reduce model risk.",
+      ...(mode==="stress"?["The stress overlay is a user-selected sensitivity, not a calibrated probability or backtested risk model."]:[])
     ]
   };
 }

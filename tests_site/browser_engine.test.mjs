@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import {makeSynthetic,forecastModels,calibrate,analyze,parseReturnsCSV} from "../docs/engine.mjs";
+import {makeSynthetic,makePreset,forecastModels,calibrate,analyze,parseReturnsCSV} from "../docs/engine.mjs";
 
 const sample=makeSynthetic(1280,20261008);
 const params={riskBudget:.12,maxWeight:.4,quantile:.85,costBps:10};
@@ -71,4 +71,52 @@ test("CSV rejects invalid dates, missing returns and non-decimals",()=>{
 });
 test("beyond configured cap never silently returns invalid allocation",()=>{
   assert.throws(()=>analyze(sample,{...params,riskBudget:.001}),/outside valid limits/);
+});
+
+test("three synthetic portfolio cases contain different realized risk histories",()=>{
+  const cases=["balanced","equity_shock","rates_shock"].map(makePreset);
+  assert.deepEqual(cases.map(x=>x.assets),[sample.assets,sample.assets,sample.assets]);
+  assert.notDeepEqual(cases[0].returns,cases[1].returns);
+  assert.notDeepEqual(cases[0].returns,cases[2].returns);
+  assert.throws(()=>makePreset("live_market"),/Unknown synthetic/);
+});
+
+test("experimental modes change hard risk budgets and preserve feasibility",()=>{
+  const input=makePreset("balanced");
+  const get=(mode,stress=1.2)=>analyze(input,{
+    ...params,uncertaintyMode:mode,stressMultiplier:stress
+  });
+  const off=get("off"),scenario=get("scenarios"),
+        calibrated=get("calibrated"),stressed=get("stress");
+  assert.deepEqual(off.profiles.Standard.weights,off.profiles["Scenario Robust"].weights);
+  assert.equal(off.calibration.status,"disabled");
+  assert.equal(scenario.calibration.status,"scenario_only");
+  assert.equal(scenario.calibration.multiplier,1);
+  assert.ok(calibrated.calibration.multiplier>=1);
+  assert.equal(stressed.calibration.status,"illustrative_stress_overlay");
+  assert.ok(stressed.profiles["Scenario Robust"].budget <
+    calibrated.profiles["Scenario Robust"].budget);
+  for(const result of [scenario,calibrated,stressed]){
+    const p=result.profiles["Scenario Robust"];
+    assert.ok(p.maxScenarioVol<=p.budget+1e-7);
+    assert.ok(Math.abs(p.weights.reduce((a,b)=>a+b,0)-1)<1e-7);
+    assert.ok(p.weights.every((x,i)=>x>=-1e-7&&x<=(i===5?1:.4)+1e-7));
+  }
+  assert.throws(()=>get("unknown"),/Unknown uncertainty/);
+});
+
+
+test("GitHub Pages places the PM workspace first without file-upload UI",async()=>{
+  const {readFileSync}=await import("node:fs");
+  const html=readFileSync(new URL("../docs/index.html",import.meta.url),"utf8");
+  assert.ok(html.indexOf('id="workspace"')<html.indexOf('id="methodology"'));
+  assert.ok(html.indexOf('id="workspace"')<html.indexOf('id="developers"'));
+  assert.doesNotMatch(html,/<input[^>]+type=["']file["']/i);
+  for(const id of ["portfolio-case","risk","weight","quantile","stress","cost",
+                    "risk-return-chart","weight-bars","model-bars","decision-tbody"]){
+    assert.ok(html.includes('id="'+id+'"'),"Missing live control or visualization: "+id);
+  }
+  for(const mode of ["off","scenarios","calibrated","stress"]){
+    assert.ok(html.includes('value="'+mode+'"'));
+  }
 });

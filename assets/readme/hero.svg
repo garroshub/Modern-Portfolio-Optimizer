@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+  <title id="title">Portfolio Risk and Rebalancing Lab</title>
+  <desc id="desc">A portfolio decision toolkit combining standard allocation with three risk forecasts, historical uncertainty calibration, and transparent cost-of-protection comparisons.</desc>
+  <rect width="1200" height="340" rx="20" fill="#0A1421"/>
+  <path d="M0 324H1200" stroke="#254155" stroke-width="1"/>
+  <path d="M638 36V302" stroke="#234052" stroke-width="1"/>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif">
+    <g transform="translate(62 0)">
+      <rect x="0" y="42" width="8" height="8" rx="4" fill="#58E0C3"/>
+      <text x="22" y="51" fill="#78C9BC" font-size="16" font-weight="700" letter-spacing="2.5">PORTFOLIO DECISION ENGINE</text>
+      <text x="0" y="133" fill="#E8F1F8" font-size="65" letter-spacing="-2.8" font-weight="760">Portfolio Risk</text>
+      <text x="0" y="206" fill="#58E0C3" font-size="60" letter-spacing="-2.8" font-weight="750">&amp; Rebalancing Lab</text>
+      <text x="0" y="250" fill="#BCCFDC" font-size="22">Compare allocations when risk models disagree.</text>
+      <text x="0" y="292" fill="#809AAB" font-size="17" font-weight="600" letter-spacing="0.8">PYTHON API  /  CLI  /  BROWSER WORKSPACE</text>
+    </g>
+    <g transform="translate(679 37)">
+      <rect x="0" y="0" width="471" height="265" rx="13" fill="#112236" stroke="#30485B" stroke-width="1.4"/>
+      <rect x="19" y="16" width="8" height="8" rx="4" fill="#58E0C3"/>
+      <text x="39" y="26" fill="#ADBECC" font-size="17" letter-spacing="1.1" font-weight="700">SCENARIO RISK ESTIMATES</text>
+      <text x="21" y="65" fill="#B0C4D3" font-size="17">504-day</text>
+      <text x="21" y="111" fill="#B0C4D3" font-size="17">126-day</text>
+      <text x="21" y="157" fill="#B0C4D3" font-size="17">EWMA</text>
+      <g transform="translate(130 50)">
+        <rect x="0" y="0" width="303" height="17" rx="5" fill="#223A50"/>
+        <rect x="0" y="0" width="243" height="17" rx="5" fill="#8AAEF7"/>
+        <rect x="0" y="46" width="303" height="17" rx="5" fill="#223A50"/>
+        <rect x="0" y="46" width="204" height="17" rx="5" fill="#679FC7"/>
+        <rect x="0" y="92" width="303" height="17" rx="5" fill="#223A50"/>
+        <rect x="0" y="92" width="219" height="17" rx="5" fill="#5DCCB7"/>
+        <path d="M265 -8V119" stroke="#E5D6AC" stroke-width="2" stroke-dasharray="4 5"/>
+      </g>
+      <path d="M20 187H451" stroke="#2B4155"/>
+      <rect x="20" y="201" width="168" height="41" rx="7" fill="#163E39" stroke="#2F7165"/>
+      <text x="35" y="226" fill="#71E8D1" font-size="17" font-weight="700">CALIBRATED LIMIT</text>
+      <path d="M202 221H238" stroke="#659C98" stroke-width="2"/>
+      <path d="M232 214L239 221 232 228" fill="none" stroke="#659C98" stroke-width="2" stroke-linecap="round"/>
+      <text x="253" y="226" fill="#E8F1F8" font-size="19" font-weight="700">PM DECISION</text>
+    </g>
+  </g>
+</svg>

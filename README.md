@@ -1,32 +1,71 @@
-# Portfolio Risk & Rebalancing Lab
+<p align="center">
+  <img src="./assets/readme/hero.svg" width="100%" alt="Portfolio Risk and Rebalancing Lab — a Python toolkit for comparing portfolio allocations under multiple risk forecasts and historical uncertainty calibration">
+</p>
 
-**Uncertainty-aware portfolio optimization, risk budgeting, and PM decision support.**
+<p align="center">
+  <strong>Compare allocations when risk models disagree — and see what protection costs.</strong>
+</p>
 
-The project provides a general-purpose Python package (NumPy, pandas, SciPy) and a pure static GitHub Pages website with a browser-only interactive portfolio demonstration. No Python application server, cloud API, accounts, brokers, or external JavaScript libraries are required.
+<p align="center">
+  <a href="https://garroshub.github.io/Modern-Portfolio-Optimizer/">Interactive workspace</a>
+  · <a href="#quick-start">Quick start</a>
+  · <a href="#python-api">Python API</a>
+  · <a href="#research-boundaries">Research boundaries</a>
+</p>
 
-**Website (after GitHub Pages deployment):** https://garroshub.github.io/Modern-Portfolio-Optimizer/
+<p align="center">
+  <img src="./assets/readme/decision-workspace.webp" width="100%" alt="Real browser workspace featuring synthetic portfolio case controls, four uncertainty-aware modes, aligned asset weights, risk-forecast disagreement and a risk-return chart">
+</p>
 
-**Source:** https://github.com/garroshub/Modern-Portfolio-Optimizer
+<p align="center"><sub>Real local interface screenshot. Data shown are synthetic, not historical ETF returns. Browser calculations approximate the full Python solver.</sub></p>
 
-## Quick start — Python
+## What you can do
 
-Requires Python 3.10+:
+**Portfolio Risk & Rebalancing Lab** combines a general-purpose Python optimization toolkit with a serverless portfolio manager decision workspace. It shows how competing covariance forecasts and historical prediction errors affect weights, risk-budget feasibility, and the expected cost of protection.
 
-```shell
+| PM question | Decision output |
+| --- | --- |
+| Where do risk models disagree? | Long-window, short-window, and EWMA forecasts |
+| What changes when uncertainty matters? | Standard versus uncertainty-aware weights |
+| How conservative is the adjustment? | Historical error margin and effective risk limit |
+| What is the cost of protection? | Expected-return difference, turnover, and estimated trading cost |
+
+### Interactive workspace
+
+The [browser demo](https://garroshub.github.io/Modern-Portfolio-Optimizer/) places the actual controls first. Choose among three **simulated** portfolio cases and four experimental decision modes:
+
+| Mode | Portfolio decision rule |
+| --- | --- |
+| **Off** | Use the standard long-window covariance estimate |
+| **Scenario guard** | Respect three simultaneous covariance risk forecasts |
+| **Calibrated** | Apply a completed-month historical risk-error margin |
+| **Stress overlay** | Add a user-selected extra risk buffer for sensitivity analysis |
+
+Change the annual risk budget, maximum asset weight, historical error quantile, and trading-cost assumption. The display recalculates the portfolio weights, model disagreement, risk–return map, and opportunity-cost comparison.
+
+> **Pages setup:** The repository owner must enable **GitHub Actions** in **Settings → Pages** before the Pages URL is active. The complete static website is also available in [`docs/`](./docs/).
+
+## Quick start
+
+Requires **Python 3.10+** with NumPy, pandas, and SciPy.
+
+```bash
+git clone https://github.com/garroshub/Modern-Portfolio-Optimizer.git
+cd Modern-Portfolio-Optimizer
 python -m pip install -e .
+
+# Reproducible synthetic example
 portfolio-risk-lab demo --output demo_report.json
-portfolio-risk-lab compare --returns daily_returns.csv --cash-asset Cash_Proxy --risk-budget 0.12 --output decision_report.json
+
+# Analyze your own return series
+portfolio-risk-lab compare \
+  --returns daily_returns.csv \
+  --cash-asset Cash_Proxy \
+  --risk-budget 0.12 \
+  --output decision_report.json
 ```
 
-Your CSV must contain **daily simple decimal returns**, not prices. A return of +1% is entered as 0.01; the default input history is at least 504 rows. For historical month-ahead risk calibration, use a unique ascending ISO date column.
-
-```csv
-date,Asset_A,Asset_B,Asset_C,Cash_Proxy
-2024-01-02,0.004,-0.002,0.001,0.0001
-2024-01-03,-0.003,0.001,0.002,0.0001
-```
-
-The rows above demonstrate the file format; a real analysis needs a sufficiently long daily series.
+Your CSV should contain **daily simple decimal returns**, not prices: `0.01` means +1%. The default configuration needs at least 504 observations. Monthly historical calibration additionally needs a unique, ascending date index.
 
 ## Python API
 
@@ -34,71 +73,92 @@ The rows above demonstrate the file format; a real analysis needs a sufficiently
 import pandas as pd
 from portfolio_risk_lab import PortfolioAnalyzer, RiskConfig
 
-returns = pd.read_csv("daily_returns.csv", parse_dates=["date"]).set_index("date")
-model = PortfolioAnalyzer(
+returns = (
+    pd.read_csv("daily_returns.csv", parse_dates=["date"])
+    .set_index("date")
+)
+
+lab = PortfolioAnalyzer(
     returns=returns,
-    current_weights=None,         # or mapping/Series/array aligned by asset
+    current_weights=None,  # or an aligned mapping / Series / array
     config=RiskConfig(
-        risk_budget=0.12,         # annualized decimal volatility
+        risk_budget=0.12,
         max_weight=0.40,
-        cash_asset="Cash_Proxy",  # optional real tradable asset, not risk-free
+        cash_asset="Cash_Proxy",  # user-supplied tradable asset
         transaction_cost_bps=10,
         risk_calibration_quantile=0.85,
     ),
 )
-report = model.compare(
+
+result = lab.compare(
     methods=["standard", "scenario_robust"],
     uncertainty="historical_calibration",  # or "none"
 )
-print(report.allocation_comparison)
-print(report.risk_budget_analysis)
-print(report.scenario_volatilities)
-print(report.risk_contributions)
-print(report.decision_report)
+
+print(result.allocation_comparison)
+print(result.scenario_volatilities)
+print(result.risk_budget_analysis)
+print(result.risk_contributions)
 ```
 
-You can also supply asset-aligned **annualized** `expected_returns=` and `covariance=` values. An externally supplied covariance automatically disables historical error calibration because those covariance assumptions have not themselves been backtested. Model constraints are long-only, fully invested, with per-asset caps and optional 100% allocation to an explicitly named lower-risk *tradable* asset. Infeasible risk budgets raise errors.
+Optional asset-aligned **annualized** `expected_returns=` and `covariance=` inputs are supported. Custom covariance disables historical error calibration, because the custom forecast itself has not been evaluated by that procedure.
 
-## What the uncertainty feature provides
+The Python optimizer is long-only and fully invested, with per-asset caps and hard volatility constraints. It raises errors for infeasible budgets. A configured `cash_asset` remains a **risky tradable asset** with observed returns, not risk-free cash.
 
-- **Model disagreement:** trailing 504-day covariance, trailing 126-day covariance, and 42-day half-life EWMA covariance.
-- **Historical underforecast diagnostics:** a multiplier derived from completed months' realized/reference volatility ratios. A configurable quantile clips the multiplier to [1, 1.5] by default.
-- **Scenario-robust optimization:** simultaneously respect each predicted risk covariance scenario.
-- **Decision explanation:** portfolio changes, asset risk contributions, risk-budget utilization, one-way turnover, and illustrative expected-return opportunity cost.
+## How it works
 
-**Evidence boundary:** Historical experiments showed that conservative risk margins can reduce monthly realized risk-limit breaches; they did **not** show consistently better economic utility than simpler risk-matched constraints. An empirical quantile on historical reference portfolios is *not* a formal confidence bound or a guarantee on the optimized portfolio. Results are decision support, not financial advice or automatically executable trades.
-
-## GitHub Pages website
-
-The static site is in `docs/` and can run directly in a web browser or from any static file server. Deployment is configured at `.github/workflows/pages.yml`.
-
-It includes an interactive **illustrative browser optimizer** with synthetic asset returns, optional local CSV upload, sliders for risk budget, maximum position size, calibration quantile and transaction cost, and downloadable local JSON diagnostics. User CSV data are processed **in the browser only** and not sent to any server.
-
-The site uses a feasible coordinate-search approximation implemented in JavaScript, with a final hard-risk constraint check. It is separate from the Python package's SciPy/SLSQP solver. Its generated synthetic sample is not historical ETF market data, and its outputs should not be expected to numerically match the full Python solver.
-
-To preview locally:
-
-```shell
-python -m http.server 8765 --directory docs
+```text
+Historical daily returns
+     │
+     ├── 504-day covariance ──────────────┐
+     ├── 126-day covariance ──────────────┤──► Scenario risk constraints
+     └── EWMA covariance ─────────────────┘               │
+                                                         ▼
+Completed-month forecast errors ──► Risk margin ──► Robust allocation
+                                                         │
+Standard allocation ─────────────────────────────────────┤
+                                                         ▼
+                                      Weights · Risk · Return · Trading cost
 ```
 
-Visit http://127.0.0.1:8765/. To publish on GitHub Pages, push `docs/` and `.github/workflows/pages.yml` to the repository's `main` branch and enable **GitHub Actions** as the Pages source in Settings → Pages. Page availability should be verified separately after deployment.
+Calibration compares month-ahead realized volatility to risk-model forecasts on **predefined reference portfolios** using only fully completed historical months. Its multiplier can tighten the effective risk budget. The PM can then compare risk reduction with its estimated opportunity cost.
 
-## Testing and building
+The static browser website uses a **feasibility-checked coordinate-search approximation**; the Python package uses **SciPy optimization**. They are separate implementations and may produce different allocations.
 
-```shell
+## Research boundaries
+
+Uncertainty awareness is **experimental decision support**, not validated alpha or a formal statistical risk guarantee.
+
+- Robust historical risk constraints sometimes reduced realized monthly volatility-limit violations.
+- Simple risk-matched conservative limits often delivered **higher economic utility** than calibrated uncertainty rules.
+- A nominal 85% historical error quantile did **not** reliably deliver 85% out-of-sample coverage across the exploratory ETF groups.
+- The website uses **synthetic cases**; no interface places trades or connects to brokerage accounts.
+
+Local experimental datasets, caches, and generated research files are excluded from this public package.
+
+## Test and develop
+
+```bash
 python -m pytest -q -o addopts= tests_package
 node --test tests_site/browser_engine.test.mjs
 node --check docs/main.js
+
+# Preview the static website
+python -m http.server 8765 --directory docs
+
+# Build a local wheel and source distribution
 python -m build --no-isolation
 ```
 
-Distribution packages include only the newly authored `portfolio_risk_lab` Python modules, excluding historical project data, local experiments and unused legacy scripts.
+The core Python library has no browser-server dependency. See the source in [`portfolio_risk_lab/`](./portfolio_risk_lab/) and the Pages deployment workflow in [`.github/workflows/pages.yml`](./.github/workflows/pages.yml).
 
-## Historical research and attribution
+<details>
+<summary><strong>Attribution and release status</strong></summary>
 
-`experiments/` contains prior exploratory Uncertainty-Aware portfolio experiments. See `experiments/NESTED_SCENARIO_ROBUST_REVIEW_ZH.md` for historical calibration and risk-matched comparisons, including negative utility results.
+The original Markowitz optimization and data-management code in `src/` credits **Marek Ozana (2024)**; the original attribution remains in place. The newer package and static decision workspace are separate implementations.
 
-The original Markowitz optimization and data-management code under `src/` was authored by **Marek Ozana (2024)** and remains credited in the source. Original data files have been retained locally for provenance and are excluded from new package distributions.
+The `portfolio-risk-lab` package is **not published to PyPI**. Original-code reuse rights and the project license should be confirmed before an external package release.
 
-The package has not been published to PyPI. Before public release, review licensing rights, package name availability and public artifacts.
+This software supports research and decision analysis, not personalized investment advice.
+
+</details>
